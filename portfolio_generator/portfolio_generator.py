@@ -49,19 +49,39 @@ def close_db(error):
 @app.cli.command('compile')
 def compile():
     """Compiles content into static file"""
+    # check if exist and delete
+    import os
+    for f in os.listdir("./output"):
+        os.remove(f)
+    # generate new file
+    compile_index()
+    compile_projects()
+
+def compile_index():
     db = get_db()
     cur = db.execute('select title, content from entries order by id desc')
     entries = cur.fetchall() 
     output = render_template('index.html', entries=entries)
-    with open('output/test.html', 'w') as f:
+    with open('output/index.html', 'w') as f:
         f.write(output)
+
+def compile_projects():
+    db = get_db()
+    cur = db.execute('select title, content from entries order by id desc')
+    entries = cur.fetchall() 
+    i = 1
+    for entry in entries:
+        page = render_template('project.html', entry=entry)
+        with open('output/project%d.html' % i, 'w') as f:
+            f.write(page)
+        i += 1
 
 @app.route("/")
 def index():
     db = get_db()
-    cur = db.execute('select title, content from entries order by id desc')
+    cur = db.execute('select * from entries order by id desc')
     entries = cur.fetchall() 
-    return render_template('index.html', entries=entries)
+    return render_template('dashboard.html', entries=entries)
 
 @app.route("/settings")
 def setting():
@@ -72,10 +92,11 @@ def new_project():
     if request.method == 'GET':
         return render_template('form.html')
     elif request.method == 'POST':
+        #print request.form
         # save file
         db = get_db()
-        db.execute('insert into entries (title, content) values (?, ?)',
-                 [request.form['name'], request.form['content']])
+        db.execute('insert into entries (title, content, url, tags) values (?, ?, ?, ?)',
+                 [request.form['name'], request.form['content'], request.form['url'], request.form['tags']])
         db.commit()
         flash('New entry was successfully posted')
         return redirect(url_for('index'))

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Blog Title</title>
+</head>
+<body>
+    {% if blog_title %}
+        <h1>{{ blog_title }}</h1>
+    {% else %}
+        <h1>Blog Title</h1>
+    {% endif %}
+
+    {% for entry in entries %} 
+    <h3> {{ entry.title }} </h3> 
+    <p> {{ entry.content }} </p>
+    <p> {{ entry.url }} </p>
+    <p> {{ entry.tags }} </p>
+    {% endfor %}
+
+    {# a comment #}
+</body>
+</html>
